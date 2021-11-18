@@ -1,0 +1,9 @@
+{
+    "checkTime": 5,
+    "folders": [
+        {
+            "path": "C:\\Projects\\Libru\\test",
+            "recursive": true
+        }
+    ]
+}
