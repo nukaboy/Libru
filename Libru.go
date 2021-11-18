@@ -13,6 +13,7 @@ import (
 	"time"
 
 	badger "github.com/dgraph-io/badger/v3"
+	gosseract "github.com/otiai10/gosseract"
 )
 
 //Settings struct
@@ -40,7 +41,7 @@ type Entry struct {
 }
 
 func checkFile(path string) {
-	match, _ := regexp.MatchString("\\.txt$", path)
+	match, _ := regexp.MatchString("\\.(jpg|jpeg|png)$", path)
 	if match {
 		f, err := os.Open(path)
 		if err != nil {
@@ -52,6 +53,12 @@ func checkFile(path string) {
 		if _, err := io.Copy(h, f); err != nil {
 			log.Fatal(err)
 		}
+
+		client := gosseract.NewClient()
+		defer client.Close()
+		client.SetImage(path)
+		text, _ := client.Text()
+		fmt.Println(text)
 
 	}
 }
