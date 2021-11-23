@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"time"
 
-	badger "github.com/dgraph-io/badger/v3"
 	gosseract "github.com/otiai10/gosseract"
 )
 
@@ -90,12 +89,12 @@ func main() {
 	json.Unmarshal(byteValue, &settings)
 
 	//Open database
-	dir := settings.DBDir
-	db, err := badger.Open(badger.DefaultOptions(dir))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
+	//dir := settings.DBDir
+	//db, err := badger.Open(badger.DefaultOptions(dir))
+	//if err != nil {
+	//		log.Fatal(err)
+	//}
+	//defer db.Close()
 
 	for {
 		for _, f := range settings.Folders {
