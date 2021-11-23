@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/disintegration/imaging"
+	"github.com/ledongthuc/pdf"
 	gosseract "github.com/otiai10/gosseract"
 )
 
@@ -41,6 +42,35 @@ type Entry struct {
 	Text string `json:"text"`
 }
 
+var settings Settings
+
+func readPdfText(path string) (string, error) {
+	f, r, err := pdf.Open(path)
+	defer func() {
+		_ = f.Close()
+	}()
+	if err != nil {
+		return "", err
+	}
+	totalPage := r.NumPage()
+
+	for pageIndex := 1; pageIndex <= totalPage; pageIndex++ {
+		p := r.Page(pageIndex)
+		if p.V.IsNull() {
+			continue
+		}
+
+		rows, _ := p.GetTextByRow()
+		for _, row := range rows {
+			println(">>>> row: ", row.Position)
+			for _, word := range row.Content {
+				fmt.Println(word.S)
+			}
+		}
+	}
+	return "", nil
+}
+
 func preprocess(image string) {
 	// Open a test image.
 	src, err := imaging.Open(image, imaging.AutoOrientation(true))
@@ -60,8 +90,16 @@ func preprocess(image string) {
 }
 
 func checkFile(path string) {
-	match, _ := regexp.MatchString("\\.(jpg|jpeg|png)$", path)
-	if match {
+	//Open database
+	//	dir := settings.DBDir
+	//	db, err := badger.Open(badger.DefaultOptions(dir))
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	defer db.Close()
+	matchImage, _ := regexp.MatchString("\\.(jpg|jpeg|png)$", path)
+	matchPDF, _ := regexp.MatchString("\\.pdf$", path)
+	if matchImage && false {
 		f, err := os.Open(path)
 		if err != nil {
 			log.Fatal(err)
@@ -80,6 +118,9 @@ func checkFile(path string) {
 		text, _ := client.Text()
 		fmt.Println(text)
 
+	} else if matchPDF {
+		fmt.Println("----------------------")
+		fmt.Println(readPdfText(path))
 	}
 }
 
@@ -105,16 +146,7 @@ func main() {
 	}
 	defer jsonFile.Close()
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var settings Settings
 	json.Unmarshal(byteValue, &settings)
-
-	//Open database
-	//dir := settings.DBDir
-	//db, err := badger.Open(badger.DefaultOptions(dir))
-	//if err != nil {
-	//		log.Fatal(err)
-	//}
-	//defer db.Close()
 
 	for {
 		for _, f := range settings.Folders {
