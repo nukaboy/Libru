@@ -115,7 +115,7 @@ func checkFile(path string) {
 		fmt.Println(text)
 
 	} else if matchPDF {
-		_, _, nilValue := readPdfText(path)
+		text, _, nilValue := readPdfText(path)
 		if nilValue {
 			fmt.Println("No Text")
 		} else {
