@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sync"
 	"time"
 
 	badger "github.com/dgraph-io/badger/v3"
@@ -42,11 +41,7 @@ type Entry struct {
 	Text string `json:"text"`
 }
 
-var wgm sync.WaitGroup
-var wgf sync.WaitGroup
-
 func checkFile(path string) {
-	defer wgf.Done()
 	match, _ := regexp.MatchString("\\.(jpg|jpeg|png)$", path)
 	if match {
 		f, err := os.Open(path)
@@ -70,20 +65,17 @@ func checkFile(path string) {
 }
 
 func checkFolder(folder Folder) {
-	defer wgm.Done()
 	err := filepath.Walk(folder.Path,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			wgf.Add(1)
-			go checkFile(path)
+			checkFile(path)
 			return nil
 		})
 	if err != nil {
 		log.Println(err)
 	}
-	wgf.Wait()
 }
 
 func main() {
@@ -107,10 +99,8 @@ func main() {
 
 	for {
 		for _, f := range settings.Folders {
-			wgm.Add(1)
-			go checkFolder(f)
+			checkFolder(f)
 		}
-		wgm.Wait()
 		time.Sleep(time.Duration(settings.CheckTime) * time.Second)
 	}
 }
