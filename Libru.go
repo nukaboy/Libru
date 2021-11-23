@@ -45,13 +45,13 @@ type Entry struct {
 
 var settings Settings
 
-func readPdfText(path string) (string, error) {
+func readPdfText(path string) (string, error, bool) {
 	f, r, err := pdf.Open(path)
 	defer func() {
 		_ = f.Close()
 	}()
 	if err != nil {
-		return "", err
+		return "", err, false
 	}
 	totalPage := r.NumPage()
 
@@ -64,7 +64,7 @@ func readPdfText(path string) (string, error) {
 		t, _ := p.GetPlainText(nil)
 		textBuilder.WriteString(t)
 	}
-	return textBuilder.String(), nil
+	return textBuilder.String(), nil, textBuilder.Len() == 0
 }
 
 func preprocess(image string) {
@@ -115,8 +115,13 @@ func checkFile(path string) {
 		fmt.Println(text)
 
 	} else if matchPDF {
-		fmt.Println("----------------------")
-		fmt.Println(readPdfText(path))
+		_, _, nilValue := readPdfText(path)
+		if nilValue {
+			fmt.Println("No Text")
+		} else {
+			//fmt.Println(text)
+		}
+
 	}
 }
 
