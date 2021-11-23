@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/disintegration/imaging"
 	gosseract "github.com/otiai10/gosseract"
 )
 
@@ -40,6 +41,24 @@ type Entry struct {
 	Text string `json:"text"`
 }
 
+func preprocess(image string) {
+	// Open a test image.
+	src, err := imaging.Open(image, imaging.AutoOrientation(true))
+	if err != nil {
+		log.Fatalf("failed to open image: %v", err)
+	}
+
+	src = imaging.Resize(src, 4000, 0, imaging.Lanczos)
+	src = imaging.Grayscale(src)
+	src = imaging.AdjustContrast(src, 20)
+	src = imaging.Sharpen(src, 2)
+
+	err = imaging.Save(src, "tmpimg.png")
+	if err != nil {
+		log.Fatalf("failed to save image: %v", err)
+	}
+}
+
 func checkFile(path string) {
 	match, _ := regexp.MatchString("\\.(jpg|jpeg|png)$", path)
 	if match {
@@ -56,7 +75,8 @@ func checkFile(path string) {
 
 		client := gosseract.NewClient()
 		defer client.Close()
-		client.SetImage(path)
+		preprocess(path)
+		client.SetImage("tmpimg.png")
 		text, _ := client.Text()
 		fmt.Println(text)
 
