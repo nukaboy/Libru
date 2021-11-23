@@ -20,6 +20,7 @@ import (
 type Settings struct {
 	Folders   []Folder `json:"folders"`
 	CheckTime int      `json:"checkTime"`
+	DBDir string `json:"database"`
 }
 
 //Settings for folder to scan
@@ -89,8 +90,8 @@ func main() {
 	json.Unmarshal(byteValue, &settings)
 
 	//Open database
-	dir, _ := os.Getwd()
-	db, err := badger.Open(badger.DefaultOptions(dir + "/badger"))
+	dir := settings.DBDir
+	db, err := badger.Open(badger.DefaultOptions(dir))
 	if err != nil {
 		log.Fatal(err)
 	}
