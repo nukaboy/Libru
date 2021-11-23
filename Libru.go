@@ -64,7 +64,7 @@ func readPdfText(path string) (string, error, bool) {
 		t, _ := p.GetPlainText(nil)
 		textBuilder.WriteString(t)
 	}
-	return textBuilder.String(), nil, textBuilder.Len() == 0
+	return string(textBuilder.Len()), nil, textBuilder.Len() == 0
 }
 
 func preprocess(image string) {
@@ -119,7 +119,7 @@ func checkFile(path string) {
 		if nilValue {
 			fmt.Println("No Text")
 		} else {
-			//fmt.Println(text)
+			fmt.Println(text)
 		}
 
 	}
