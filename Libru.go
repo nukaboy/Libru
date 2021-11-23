@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -54,21 +55,16 @@ func readPdfText(path string) (string, error) {
 	}
 	totalPage := r.NumPage()
 
+	var textBuilder bytes.Buffer
 	for pageIndex := 1; pageIndex <= totalPage; pageIndex++ {
 		p := r.Page(pageIndex)
 		if p.V.IsNull() {
 			continue
 		}
-
-		rows, _ := p.GetTextByRow()
-		for _, row := range rows {
-			println(">>>> row: ", row.Position)
-			for _, word := range row.Content {
-				fmt.Println(word.S)
-			}
-		}
+		t, _ := p.GetPlainText(nil)
+		textBuilder.WriteString(t)
 	}
-	return "", nil
+	return textBuilder.String(), nil
 }
 
 func preprocess(image string) {
